@@ -1,0 +1,13 @@
+server:
+  port: 8999
+
+jwt:
+  secret: "your_secret_key_here"
+
+database:
+  host: "43.138.12.59"
+  port: 5432
+  user: "postgres"
+  dbname: "mydatabase"
+  sslmode: "disable"
+  password: "xn001624"
