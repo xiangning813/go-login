@@ -18,22 +18,21 @@ func InitGinEngine() *gin.Engine {
 }
 
 // InitDB 初始化数据库连接
-func InitDB() (*gorm.DB, error) {
-	cfg := configs.Conf.Database
+func InitDB(cfg configs.DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		cfg.Host, cfg.User, cfg.Password, cfg.Dbname, cfg.Port)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	db.AutoMigrate(&models.User{})
 	return db, nil
 }
 
 // InitConfig 初始化配置
-func InitConfig() {
+func InitConfig() *configs.Config {
 	configs.InitConfig()
+	return configs.Conf
 }
 
 // ProviderSet 定义 Provider 集合
@@ -45,12 +44,13 @@ var ProviderSet = wire.NewSet(
 
 // InitApp 初始化应用
 func InitApp(engine *gin.Engine, db *gorm.DB) *gin.Engine {
+	// 执行数据库迁移
+	db.AutoMigrate(&models.User{})
 
-	fmt.Println(engine)
-	fmt.Println(db)
-
+	// 注册路由
 	routes.RegisterUserRoutes(engine, db)
-	/* 404 */
+
+	// 设置404路由
 	engine.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "Not Url!"})
 	})
